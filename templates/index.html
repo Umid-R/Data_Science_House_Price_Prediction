@@ -3,251 +3,708 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>House Price Predictor</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <title>House Price Estimator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #f5f7fa; --white: #ffffff; --primary: #2563eb;
-      --primary-light: #eff6ff; --primary-dark: #1d4ed8;
-      --text: #111827; --muted: #6b7280; --border: #e5e7eb;
-      --success: #10b981; --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+      --bg: #faf9f6;
+      --card: #ffffff;
+      --primary: #1a1a2e;
+      --accent: #e8633a;
+      --accent2: #f4a261;
+      --text: #1a1a2e;
+      --muted: #8a8a9a;
+      --border: #ebebeb;
+      --success: #2d9b6f;
     }
-    body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 32px 16px 64px; }
-    .wrapper { max-width: 680px; margin: 0 auto; }
-    .header { text-align: center; margin-bottom: 32px; animation: fadeUp 0.5s ease both; }
-    .header .icon { font-size: 40px; margin-bottom: 12px; display: block; }
-    .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
-    .header p { color: var(--muted); font-size: 15px; font-weight: 300; }
-    .result-card { background: linear-gradient(135deg, var(--primary), #3b82f6); border-radius: 16px; padding: 28px 32px; margin-bottom: 24px; color: white; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 8px 32px rgba(37,99,235,0.3); animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
-    .result-label { font-size: 13px; font-weight: 500; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
-    .result-price { font-size: 48px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
-    .result-sub { font-size: 13px; opacity: 0.7; margin-top: 4px; }
-    .result-emoji { font-size: 48px; }
-    .form-card { background: var(--white); border-radius: 16px; padding: 28px; box-shadow: var(--shadow); animation: fadeUp 0.5s ease 0.1s both; }
-    .steps { display: flex; gap: 6px; margin-bottom: 28px; }
-    .step-dot { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background 0.3s; }
-    .step-dot.active { background: var(--primary); }
-    .step-dot.done { background: var(--success); }
-    .step-section { display: none; }
-    .step-section.active { display: block; }
-    .step-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-    .step-desc { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
-    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field.full { grid-column: 1 / -1; }
-    label { font-size: 13px; font-weight: 500; color: var(--text); }
-    .hint { font-size: 11px; color: var(--muted); margin-top: -3px; }
-    input[type="number"], select { background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 15px; padding: 10px 14px; width: 100%; outline: none; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s; -webkit-appearance: none; }
-    input[type="number"]:focus, select:focus { border-color: var(--primary); background: var(--white); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
-    .slider-field { display: flex; flex-direction: column; gap: 8px; }
-    .slider-header { display: flex; justify-content: space-between; align-items: center; }
-    .slider-val { font-size: 15px; font-weight: 600; color: var(--primary); min-width: 50px; text-align: right; }
-    input[type="range"] { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 3px; background: var(--border); outline: none; cursor: pointer; }
-    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); box-shadow: 0 2px 6px rgba(37,99,235,0.4); transition: transform 0.15s; }
-    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
-    .toggle-field { display: flex; flex-direction: column; gap: 8px; }
-    .toggle-wrap { display: flex; align-items: center; gap: 12px; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 14px; cursor: pointer; transition: border-color 0.2s; }
-    .toggle-wrap.on { border-color: var(--primary); background: var(--primary-light); }
-    .toggle-switch { width: 36px; height: 20px; background: var(--border); border-radius: 10px; position: relative; transition: background 0.2s; flex-shrink: 0; }
-    .toggle-wrap.on .toggle-switch { background: var(--primary); }
-    .toggle-switch::after { content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%; background: white; top: 3px; left: 3px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    .toggle-wrap.on .toggle-switch::after { left: 19px; }
-    .toggle-label { font-size: 14px; font-weight: 500; }
-    .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
-    .btn { padding: 11px 24px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
-    .btn-ghost { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
-    .btn-ghost:hover { border-color: var(--text); color: var(--text); }
-    .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
-    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
-    .btn-success:hover { filter: brightness(1.05); transform: translateY(-1px); }
-    .step-counter { font-size: 13px; color: var(--muted); font-weight: 500; }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes popIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
-    @media (max-width: 480px) { .fields { grid-template-columns: 1fr; } .result-price { font-size: 36px; } }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(232,99,58,0.08) 0%, transparent 60%);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-text {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border-radius: 24px;
+      padding: 40px 36px 32px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.08);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    /* Question screens */
+    .screen { display: none; animation: slideIn 0.35s cubic-bezier(0.4,0,0.2,1) both; }
+    .screen.active { display: block; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(24px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateX(0); }
+      to   { opacity: 0; transform: translateX(-24px); }
+    }
+
+    .q-emoji { font-size: 36px; margin-bottom: 16px; display: block; }
+
+    .q-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .q-title {
+      font-family: 'Fraunces', serif;
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .q-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    /* Stepper */
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin: 8px 0 32px;
+    }
+
+    .stepper-btn {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      font-size: 22px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      color: var(--text);
+    }
+
+    .stepper-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .stepper-val {
+      font-family: 'Fraunces', serif;
+      font-size: 56px;
+      font-weight: 700;
+      color: var(--text);
+      min-width: 80px;
+      text-align: center;
+      line-height: 1;
+    }
+
+    /* Star rating */
+    .stars {
+      display: flex;
+      gap: 10px;
+      margin: 8px 0 32px;
+      justify-content: center;
+    }
+
+    .star {
+      font-size: 40px;
+      cursor: pointer;
+      transition: transform 0.15s;
+      filter: grayscale(1) opacity(0.3);
+      user-select: none;
+    }
+
+    .star.lit { filter: none; transform: scale(1.1); }
+    .star:hover { transform: scale(1.15); }
+
+    /* Choice cards */
+    .choices {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 8px 0 32px;
+    }
+
+    .choices.cols-1 { grid-template-columns: 1fr; }
+
+    .choice {
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--bg);
+      text-align: left;
+    }
+
+    .choice:hover { border-color: var(--accent); background: #fff5f2; }
+    .choice.selected { border-color: var(--accent); background: #fff5f2; box-shadow: 0 0 0 3px rgba(232,99,58,0.12); }
+
+    .choice-icon { font-size: 24px; margin-bottom: 8px; display: block; }
+    .choice-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .choice-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+    /* Toggle */
+    .big-toggle {
+      display: flex;
+      gap: 12px;
+      margin: 8px 0 32px;
+    }
+
+    .toggle-opt {
+      flex: 1;
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      background: var(--bg);
+    }
+
+    .toggle-opt:hover { border-color: var(--accent); }
+    .toggle-opt.selected { border-color: var(--accent); background: #fff5f2; box-shadow: 0 0 0 3px rgba(232,99,58,0.12); }
+
+    .toggle-opt-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+    .toggle-opt-label { font-size: 15px; font-weight: 600; }
+
+    /* Nav */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .btn {
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      padding-left: 0;
+    }
+    .btn-ghost:hover { color: var(--text); }
+
+    .btn-next {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 14px rgba(232,99,58,0.35);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-next:hover { background: #d4562f; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(232,99,58,0.4); }
+    .btn-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* Result screen */
+    .result-screen {
+      text-align: center;
+      animation: slideIn 0.4s cubic-bezier(0.4,0,0.2,1) both;
+    }
+
+    .result-house { font-size: 64px; margin-bottom: 20px; animation: bounce 0.6s 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+    @keyframes bounce {
+      from { opacity: 0; transform: scale(0.5); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .result-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .result-price {
+      font-family: 'Fraunces', serif;
+      font-size: 64px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .result-usd {
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    .result-summary {
+      background: var(--bg);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: left;
+      margin-bottom: 28px;
+    }
+
+    .summary-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .summary-row:last-child { border-bottom: none; }
+    .summary-key { color: var(--muted); }
+    .summary-val { font-weight: 600; }
+
+    .btn-restart {
+      background: var(--primary);
+      color: white;
+      width: 100%;
+      justify-content: center;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 16px;
+    }
+
+    .btn-restart:hover { background: #2d2d4e; transform: translateY(-1px); }
+
+    @media (max-width: 480px) {
+      .card { padding: 32px 20px 24px; }
+      .q-title { font-size: 22px; }
+      .result-price { font-size: 48px; }
+      .choices { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-<div class="wrapper">
-  <div class="header">
-    <span class="icon">🏠</span>
-    <h1>House Price Predictor</h1>
-    <p>Boston Housing Dataset · Linear Regression Model</p>
+<div class="shell">
+
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:14%"></div></div>
+    <span class="progress-text" id="progress-text">1 of 7</span>
   </div>
 
-  {% if prediction %}
-  <div class="result-card">
-    <div>
-      <div class="result-label">Predicted Price</div>
-      <div class="result-price">${{ prediction }}k</div>
-      <div class="result-sub">≈ ${{ "{:,.0f}".format(prediction * 1000) }} USD</div>
-    </div>
-    <div class="result-emoji">💰</div>
-  </div>
-  {% endif %}
+  <div class="card">
 
-  <div class="form-card">
-    <div class="steps">
-      <div class="step-dot active" id="dot-1"></div>
-      <div class="step-dot" id="dot-2"></div>
-      <div class="step-dot" id="dot-3"></div>
-    </div>
-
-    <form method="POST" action="/predict" id="main-form">
-
-      <!-- Step 1 -->
-      <div class="step-section active" id="step-1">
-        <div class="step-title">📍 Location & Zoning</div>
-        <div class="step-desc">Tell us about the neighborhood characteristics.</div>
-        <div class="fields">
-          <div class="field">
-            <label>Crime Rate</label>
-            <span class="hint">Per capita crime rate by town</span>
-            <input type="number" name="crime_rate" step="0.00001" placeholder="e.g. 0.00632" required>
-          </div>
-          <div class="field">
-            <label>Residential Zone %</label>
-            <span class="hint">% land zoned for large lots</span>
-            <input type="number" name="residential_zone_pct" step="0.1" placeholder="e.g. 18.0" required>
-          </div>
-          <div class="field">
-            <label>Industrial %</label>
-            <span class="hint">% non-retail business acres</span>
-            <input type="number" name="industrial_pct" step="0.01" placeholder="e.g. 2.31" required>
-          </div>
-          <div class="field">
-            <label>Nitric Oxide</label>
-            <span class="hint">Air pollution (parts per 10M)</span>
-            <input type="number" name="nitric_oxide" step="0.001" placeholder="e.g. 0.538" required>
-          </div>
-          <div class="field full toggle-field">
-            <label>Charles River</label>
-            <span class="hint">Does the property border the Charles River?</span>
-            <div class="toggle-wrap" id="toggle-wrap" onclick="toggleRiver()">
-              <div class="toggle-switch" id="toggle-switch"></div>
-              <span class="toggle-label" id="toggle-text">No — does not border river</span>
-            </div>
-            <input type="hidden" name="charles_river" id="charles_river" value="0">
-          </div>
-        </div>
+    <!-- Q1: Rooms -->
+    <div class="screen active" id="screen-1">
+      <span class="q-emoji">🛋️</span>
+      <div class="q-label">Question 1</div>
+      <div class="q-title">How many rooms does the house have?</div>
+      <div class="q-sub">Count all rooms — bedrooms, living room, kitchen, etc.</div>
+      <div class="stepper">
+        <button class="stepper-btn" onclick="stepRooms(-1)">−</button>
+        <div class="stepper-val" id="rooms-display">6</div>
+        <button class="stepper-btn" onclick="stepRooms(1)">+</button>
       </div>
-
-      <!-- Step 2 -->
-      <div class="step-section" id="step-2">
-        <div class="step-title">🏡 Property Details</div>
-        <div class="step-desc">Physical characteristics of the home.</div>
-        <div class="fields">
-          <div class="field full slider-field">
-            <div class="slider-header">
-              <div><label>Average Rooms</label><div class="hint">Rooms per dwelling</div></div>
-              <span class="slider-val" id="rooms-val">6.0</span>
-            </div>
-            <input type="range" name="avg_rooms" min="3" max="9" step="0.1" value="6.0"
-              oninput="document.getElementById('rooms-val').textContent = parseFloat(this.value).toFixed(1)">
-          </div>
-          <div class="field full slider-field">
-            <div class="slider-header">
-              <div><label>Pre-1940 Units %</label><div class="hint">% owner-occupied homes built before 1940</div></div>
-              <span class="slider-val" id="age-val">50%</span>
-            </div>
-            <input type="range" name="pre1940_pct" min="0" max="100" step="0.1" value="50"
-              oninput="document.getElementById('age-val').textContent = parseFloat(this.value).toFixed(0) + '%'">
-          </div>
-          <div class="field">
-            <label>Employment Distance</label>
-            <span class="hint">Weighted dist. to job centers</span>
-            <input type="number" name="employment_dist" step="0.0001" placeholder="e.g. 4.09" required>
-          </div>
-          <div class="field">
-            <label>Highway Access Index</label>
-            <span class="hint">Radial highway accessibility</span>
-            <input type="number" name="highway_access" step="1" placeholder="e.g. 1" required>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 3 -->
-      <div class="step-section" id="step-3">
-        <div class="step-title">💼 Tax & Social Factors</div>
-        <div class="step-desc">Economic and social characteristics of the area.</div>
-        <div class="fields">
-          <div class="field full slider-field">
-            <div class="slider-header">
-              <div><label>Tax Rate</label><div class="hint">Full-value property tax per $10,000</div></div>
-              <span class="slider-val" id="tax-val">300</span>
-            </div>
-            <input type="range" name="tax_rate" min="100" max="800" step="1" value="300"
-              oninput="document.getElementById('tax-val').textContent = this.value">
-          </div>
-          <div class="field full slider-field">
-            <div class="slider-header">
-              <div><label>Pupil-Teacher Ratio</label><div class="hint">School quality indicator by town</div></div>
-              <span class="slider-val" id="pt-val">15.0</span>
-            </div>
-            <input type="range" name="pupil_teacher_ratio" min="12" max="22" step="0.1" value="15"
-              oninput="document.getElementById('pt-val').textContent = parseFloat(this.value).toFixed(1)">
-          </div>
-          <div class="field">
-            <label>Black Proportion</label>
-            <span class="hint">1000(Bk − 0.63)²</span>
-            <input type="number" name="black_proportion" step="0.01" placeholder="e.g. 396.9" required>
-          </div>
-          <div class="field">
-            <label>Lower Status %</label>
-            <span class="hint">% of lower-status population</span>
-            <input type="number" name="lower_status_pct" step="0.01" placeholder="e.g. 4.98" required>
-          </div>
-        </div>
-      </div>
-
       <div class="nav">
-        <button type="button" class="btn btn-ghost" id="btn-back" onclick="changeStep(-1)" style="visibility:hidden">← Back</button>
-        <span class="step-counter" id="step-counter">Step 1 of 3</span>
-        <button type="button" class="btn btn-primary" id="btn-next" onclick="changeStep(1)">Next →</button>
+        <span></span>
+        <button class="btn btn-next" onclick="goNext(1)">Next <span>→</span></button>
       </div>
-    </form>
-  </div>
-</div>
+    </div>
+
+    <!-- Q2: Safety -->
+    <div class="screen" id="screen-2">
+      <span class="q-emoji">🔒</span>
+      <div class="q-label">Question 2</div>
+      <div class="q-title">How safe is the neighborhood?</div>
+      <div class="q-sub">Tap a star to rate — 1 is high crime, 5 is very safe.</div>
+      <div class="stars" id="stars-safety">
+        <span class="star" onclick="rateSafety(1)">⭐</span>
+        <span class="star" onclick="rateSafety(2)">⭐</span>
+        <span class="star" onclick="rateSafety(3)">⭐</span>
+        <span class="star" onclick="rateSafety(4)">⭐</span>
+        <span class="star" onclick="rateSafety(5)">⭐</span>
+      </div>
+      <div class="nav">
+        <button class="btn btn-ghost" onclick="goBack(2)">← Back</button>
+        <button class="btn btn-next" id="next-2" onclick="goNext(2)" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Q3: House age -->
+    <div class="screen" id="screen-3">
+      <span class="q-emoji">🏗️</span>
+      <div class="q-label">Question 3</div>
+      <div class="q-title">How old is the house?</div>
+      <div class="q-sub">Pick the era that best describes when it was built.</div>
+      <div class="choices cols-1" id="choices-age">
+        <div class="choice" onclick="pickAge(this, 'new')" data-val="new">
+          <span class="choice-icon">✨</span>
+          <div class="choice-title">New Build</div>
+          <div class="choice-desc">Built after 1980 — modern finishes, newer systems</div>
+        </div>
+        <div class="choice" onclick="pickAge(this, 'mid')" data-val="mid">
+          <span class="choice-icon">🏠</span>
+          <div class="choice-title">Mid-Century</div>
+          <div class="choice-desc">Built 1940–1980 — solid construction, some updates</div>
+        </div>
+        <div class="choice" onclick="pickAge(this, 'old')" data-val="old">
+          <span class="choice-icon">🏛️</span>
+          <div class="choice-title">Classic / Old</div>
+          <div class="choice-desc">Built before 1940 — character home, may need work</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn btn-ghost" onclick="goBack(3)">← Back</button>
+        <button class="btn btn-next" id="next-3" onclick="goNext(3)" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Q4: River -->
+    <div class="screen" id="screen-4">
+      <span class="q-emoji">🌊</span>
+      <div class="q-label">Question 4</div>
+      <div class="q-title">Is the property near the Charles River?</div>
+      <div class="q-sub">River-adjacent properties often carry a premium.</div>
+      <div class="big-toggle">
+        <div class="toggle-opt" id="river-yes" onclick="pickRiver('yes')">
+          <span class="toggle-opt-icon">✅</span>
+          <div class="toggle-opt-label">Yes</div>
+        </div>
+        <div class="toggle-opt" id="river-no" onclick="pickRiver('no')">
+          <span class="toggle-opt-icon">❌</span>
+          <div class="toggle-opt-label">No</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn btn-ghost" onclick="goBack(4)">← Back</button>
+        <button class="btn btn-next" id="next-4" onclick="goNext(4)" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Q5: Area type -->
+    <div class="screen" id="screen-5">
+      <span class="q-emoji">🏙️</span>
+      <div class="q-label">Question 5</div>
+      <div class="q-title">What's the area like?</div>
+      <div class="q-sub">Describe the general feel of the surrounding neighborhood.</div>
+      <div class="choices" id="choices-area">
+        <div class="choice" onclick="pickArea(this, 'suburb')" data-val="suburb">
+          <span class="choice-icon">🌳</span>
+          <div class="choice-title">Quiet Suburb</div>
+          <div class="choice-desc">Mostly residential, lots of green space</div>
+        </div>
+        <div class="choice" onclick="pickArea(this, 'mixed')" data-val="mixed">
+          <span class="choice-icon">🏘️</span>
+          <div class="choice-title">Mixed Area</div>
+          <div class="choice-desc">Blend of homes, shops, and offices</div>
+        </div>
+        <div class="choice" onclick="pickArea(this, 'industrial')" data-val="industrial">
+          <span class="choice-icon">🏭</span>
+          <div class="choice-title">Industrial</div>
+          <div class="choice-desc">Lots of factories or warehouses nearby</div>
+        </div>
+        <div class="choice" onclick="pickArea(this, 'city')" data-val="city">
+          <span class="choice-icon">🌆</span>
+          <div class="choice-title">City Center</div>
+          <div class="choice-desc">Dense, busy, close to everything</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn btn-ghost" onclick="goBack(5)">← Back</button>
+        <button class="btn btn-next" id="next-5" onclick="goNext(5)" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Q6: Schools -->
+    <div class="screen" id="screen-6">
+      <span class="q-emoji">🎓</span>
+      <div class="q-label">Question 6</div>
+      <div class="q-title">How good are the local schools?</div>
+      <div class="q-sub">1 star = poor, 5 stars = excellent schools nearby.</div>
+      <div class="stars" id="stars-schools">
+        <span class="star" onclick="rateSchools(1)">⭐</span>
+        <span class="star" onclick="rateSchools(2)">⭐</span>
+        <span class="star" onclick="rateSchools(3)">⭐</span>
+        <span class="star" onclick="rateSchools(4)">⭐</span>
+        <span class="star" onclick="rateSchools(5)">⭐</span>
+      </div>
+      <div class="nav">
+        <button class="btn btn-ghost" onclick="goBack(6)">← Back</button>
+        <button class="btn btn-next" id="next-6" onclick="goNext(6)" disabled>Next →</button>
+      </div>
+    </div>
+
+    <!-- Q7: Tax level -->
+    <div class="screen" id="screen-7">
+      <span class="q-emoji">💸</span>
+      <div class="q-label">Question 7</div>
+      <div class="q-title">How would you describe the property tax level?</div>
+      <div class="q-sub">Based on what you know about the area's cost of living.</div>
+      <div class="choices cols-1" id="choices-tax">
+        <div class="choice" onclick="pickTax(this, 'low')" data-val="low">
+          <span class="choice-icon">😊</span>
+          <div class="choice-title">Low</div>
+          <div class="choice-desc">Below average taxes for the region</div>
+        </div>
+        <div class="choice" onclick="pickTax(this, 'medium')" data-val="medium">
+          <span class="choice-icon">😐</span>
+          <div class="choice-title">Medium</div>
+          <div class="choice-desc">About average — nothing unusual</div>
+        </div>
+        <div class="choice" onclick="pickTax(this, 'high')" data-val="high">
+          <span class="choice-icon">😬</span>
+          <div class="choice-title">High</div>
+          <div class="choice-desc">Above average taxes</div>
+        </div>
+        <div class="choice" onclick="pickTax(this, 'very_high')" data-val="very_high">
+          <span class="choice-icon">😱</span>
+          <div class="choice-title">Very High</div>
+          <div class="choice-desc">Noticeably expensive area</div>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn btn-ghost" onclick="goBack(7)">← Back</button>
+        <button class="btn btn-next" id="next-7" onclick="submitForm()" disabled>🏠 Get My Estimate</button>
+      </div>
+    </div>
+
+    <!-- Result screen -->
+    <div class="screen" id="screen-result">
+      {% if prediction %}
+      <div class="result-screen">
+        <div class="result-house">🏡</div>
+        <div class="result-label">Estimated Home Value</div>
+        <div class="result-price">${{ prediction }}k</div>
+        <div class="result-usd">≈ ${{ "{:,.0f}".format(prediction * 1000) }} USD</div>
+        <div class="result-summary" id="result-summary">
+          <div class="summary-title">Your answers</div>
+          <!-- filled by JS from sessionStorage -->
+        </div>
+        <button class="btn btn-restart" onclick="location.href='/'">↩ Start Over</button>
+      </div>
+      {% endif %}
+    </div>
+
+  </div><!-- /card -->
+</div><!-- /shell -->
+
+<!-- Hidden form that actually submits -->
+<form method="POST" action="/predict" id="hidden-form" style="display:none">
+  <input type="hidden" name="avg_rooms" id="f-avg_rooms">
+  <input type="hidden" name="crime_rate" id="f-crime_rate">
+  <input type="hidden" name="pre1940_pct" id="f-pre1940_pct">
+  <input type="hidden" name="charles_river" id="f-charles_river">
+  <input type="hidden" name="industrial_pct" id="f-industrial_pct">
+  <input type="hidden" name="nitric_oxide" id="f-nitric_oxide">
+  <input type="hidden" name="residential_zone_pct" id="f-residential_zone_pct">
+  <input type="hidden" name="pupil_teacher_ratio" id="f-pupil_teacher_ratio">
+  <input type="hidden" name="tax_rate" id="f-tax_rate">
+  <!-- Dataset averages for hidden features -->
+  <input type="hidden" name="employment_dist" value="3.7950">
+  <input type="hidden" name="highway_access" value="9.5494">
+  <input type="hidden" name="black_proportion" value="356.67">
+  <input type="hidden" name="lower_status_pct" value="12.65">
+</form>
 
 <script>
-  let current = 1;
-  const total = 3;
-  let riverOn = false;
+  // State
+  let rooms = 6;
+  let safetyRating = 0;
+  let ageChoice = null;
+  let riverChoice = null;
+  let areaChoice = null;
+  let schoolsRating = 0;
+  let taxChoice = null;
 
-  function toggleRiver() {
-    riverOn = !riverOn;
-    document.getElementById('toggle-wrap').classList.toggle('on', riverOn);
-    document.getElementById('charles_river').value = riverOn ? 1 : 0;
-    document.getElementById('toggle-text').textContent = riverOn
-      ? 'Yes — borders the Charles River'
-      : 'No — does not border river';
+  // Progress
+  function updateProgress(step) {
+    const pct = Math.round((step / 7) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = step + ' of 7';
   }
 
-  function changeStep(dir) {
-    document.getElementById('step-' + current).classList.remove('active');
-    document.getElementById('dot-' + current).classList.remove('active');
-    if (dir === 1) document.getElementById('dot-' + current).classList.add('done');
-    else document.getElementById('dot-' + current).classList.remove('done');
-
-    current += dir;
-    document.getElementById('step-' + current).classList.add('active');
-    document.getElementById('dot-' + current).classList.remove('done');
-    document.getElementById('dot-' + current).classList.add('active');
-    document.getElementById('step-counter').textContent = 'Step ' + current + ' of ' + total;
-    document.getElementById('btn-back').style.visibility = current > 1 ? 'visible' : 'hidden';
-
-    const nextBtn = document.getElementById('btn-next');
-    if (current === total) {
-      nextBtn.textContent = '🏠 Predict Price';
-      nextBtn.className = 'btn btn-success';
-      nextBtn.onclick = () => document.getElementById('main-form').submit();
-    } else {
-      nextBtn.textContent = 'Next →';
-      nextBtn.className = 'btn btn-primary';
-      nextBtn.onclick = () => changeStep(1);
-    }
+  // Navigation
+  function goNext(from) {
+    document.getElementById('screen-' + from).classList.remove('active');
+    const next = from + 1;
+    document.getElementById('screen-' + next).classList.add('active');
+    updateProgress(next);
   }
+
+  function goBack(from) {
+    document.getElementById('screen-' + from).classList.remove('active');
+    const prev = from - 1;
+    document.getElementById('screen-' + prev).classList.add('active');
+    updateProgress(prev);
+  }
+
+  // Q1: Rooms stepper
+  function stepRooms(dir) {
+    rooms = Math.max(3, Math.min(12, rooms + dir));
+    document.getElementById('rooms-display').textContent = rooms;
+  }
+
+  // Q2: Safety stars
+  function rateSafety(n) {
+    safetyRating = n;
+    const stars = document.querySelectorAll('#stars-safety .star');
+    stars.forEach((s, i) => s.classList.toggle('lit', i < n));
+    document.getElementById('next-2').disabled = false;
+  }
+
+  // Q3: Age choices
+  function pickAge(el, val) {
+    document.querySelectorAll('#choices-age .choice').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    ageChoice = val;
+    document.getElementById('next-3').disabled = false;
+  }
+
+  // Q4: River toggle
+  function pickRiver(val) {
+    riverChoice = val;
+    document.getElementById('river-yes').classList.toggle('selected', val === 'yes');
+    document.getElementById('river-no').classList.toggle('selected', val === 'no');
+    document.getElementById('next-4').disabled = false;
+  }
+
+  // Q5: Area choices
+  function pickArea(el, val) {
+    document.querySelectorAll('#choices-area .choice').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    areaChoice = val;
+    document.getElementById('next-5').disabled = false;
+  }
+
+  // Q6: Schools stars
+  function rateSchools(n) {
+    schoolsRating = n;
+    const stars = document.querySelectorAll('#stars-schools .star');
+    stars.forEach((s, i) => s.classList.toggle('lit', i < n));
+    document.getElementById('next-6').disabled = false;
+  }
+
+  // Q7: Tax choices
+  function pickTax(el, val) {
+    document.querySelectorAll('#choices-tax .choice').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    taxChoice = val;
+    document.getElementById('next-7').disabled = false;
+  }
+
+  // Submit: map answers → ML values
+  function submitForm() {
+    // avg_rooms: direct
+    document.getElementById('f-avg_rooms').value = rooms;
+
+    // crime_rate: safety 5→very safe (low crime), 1→high crime
+    const crimeMap = { 5: 0.01, 4: 0.1, 3: 1.0, 2: 5.0, 1: 15.0 };
+    document.getElementById('f-crime_rate').value = crimeMap[safetyRating];
+
+    // pre1940_pct: house age
+    const ageMap = { new: 10, mid: 55, old: 90 };
+    document.getElementById('f-pre1940_pct').value = ageMap[ageChoice];
+
+    // charles river
+    document.getElementById('f-charles_river').value = riverChoice === 'yes' ? 1 : 0;
+
+    // area → industrial_pct, nitric_oxide, residential_zone_pct
+    const areaMap = {
+      suburb:     { ind: 3.0,  nox: 0.42, res: 30.0 },
+      mixed:      { ind: 10.0, nox: 0.52, res: 15.0 },
+      industrial: { ind: 22.0, nox: 0.65, res: 2.0  },
+      city:       { ind: 18.0, nox: 0.70, res: 0.0  }
+    };
+    const area = areaMap[areaChoice];
+    document.getElementById('f-industrial_pct').value = area.ind;
+    document.getElementById('f-nitric_oxide').value = area.nox;
+    document.getElementById('f-residential_zone_pct').value = area.res;
+
+    // schools → pupil_teacher_ratio (5 stars = low ratio = good schools)
+    const ptMap = { 5: 13.0, 4: 15.5, 3: 17.5, 2: 19.5, 1: 21.5 };
+    document.getElementById('f-pupil_teacher_ratio').value = ptMap[schoolsRating];
+
+    // tax level
+    const taxMap = { low: 200, medium: 330, high: 500, very_high: 700 };
+    document.getElementById('f-tax_rate').value = taxMap[taxChoice];
+
+    document.getElementById('hidden-form').submit();
+  }
+
+  // Show result screen if prediction exists
+  {% if prediction %}
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('progress-text').textContent = 'Done!';
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-result').classList.add('active');
+  {% endif %}
 </script>
 </body>
 </html>
