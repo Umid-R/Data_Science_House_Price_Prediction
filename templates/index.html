@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>House Price Estimator</title>
+  <title>Boston House Price Estimator</title>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,42 +32,26 @@
       background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(232,99,58,0.08) 0%, transparent 60%);
     }
 
-    .shell {
-      width: 100%;
-      max-width: 520px;
-    }
+    .shell { width: 100%; max-width: 520px; }
 
-    /* Progress bar */
     .progress-wrap {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 28px;
+      transition: opacity 0.3s;
     }
+    .progress-wrap.hidden { opacity: 0; pointer-events: none; }
 
-    .progress-bar {
-      flex: 1;
-      height: 3px;
-      background: var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
+    .progress-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
     .progress-fill {
       height: 100%;
       background: linear-gradient(90deg, var(--accent), var(--accent2));
       border-radius: 2px;
-      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
     }
+    .progress-text { font-size: 12px; color: var(--muted); white-space: nowrap; font-weight: 500; }
 
-    .progress-text {
-      font-size: 12px;
-      color: var(--muted);
-      white-space: nowrap;
-      font-weight: 500;
-    }
-
-    /* Card */
     .card {
       background: var(--card);
       border-radius: 24px;
@@ -76,7 +60,6 @@
       position: relative;
       overflow: hidden;
     }
-
     .card::before {
       content: '';
       position: absolute;
@@ -85,7 +68,6 @@
       background: linear-gradient(90deg, var(--accent), var(--accent2));
     }
 
-    /* Question screens */
     .screen { display: none; animation: slideIn 0.35s cubic-bezier(0.4,0,0.2,1) both; }
     .screen.active { display: block; }
 
@@ -93,13 +75,53 @@
       from { opacity: 0; transform: translateX(24px); }
       to   { opacity: 1; transform: translateX(0); }
     }
-    @keyframes slideOut {
-      from { opacity: 1; transform: translateX(0); }
-      to   { opacity: 0; transform: translateX(-24px); }
+
+    /* Welcome screen */
+    .welcome { text-align: center; padding: 8px 0; }
+    .welcome-icon { font-size: 64px; display: block; margin-bottom: 20px; }
+    .welcome-title {
+      font-family: 'Fraunces', serif;
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
     }
+    .welcome-title span { color: var(--accent); }
+    .welcome-desc { font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 28px; }
+    .badges {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 36px;
+    }
+    .badge {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .btn-start {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      padding: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(232,99,58,0.35);
+      transition: all 0.15s;
+    }
+    .btn-start:hover { background: #d4562f; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232,99,58,0.4); }
 
+    /* Question screens */
     .q-emoji { font-size: 36px; margin-bottom: 16px; display: block; }
-
     .q-label {
       font-size: 11px;
       font-weight: 600;
@@ -108,32 +130,17 @@
       color: var(--accent);
       margin-bottom: 8px;
     }
-
     .q-title {
       font-family: 'Fraunces', serif;
       font-size: 26px;
       font-weight: 700;
       line-height: 1.25;
       margin-bottom: 8px;
-      color: var(--text);
     }
-
-    .q-sub {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 32px;
-      line-height: 1.5;
-    }
+    .q-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; line-height: 1.5; }
 
     /* Stepper */
-    .stepper {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      margin: 8px 0 32px;
-    }
-
+    .stepper { display: flex; align-items: center; justify-content: center; gap: 20px; margin: 8px 0 32px; }
     .stepper-btn {
       width: 48px; height: 48px;
       border-radius: 50%;
@@ -145,27 +152,18 @@
       transition: all 0.15s;
       color: var(--text);
     }
-
     .stepper-btn:hover { border-color: var(--accent); color: var(--accent); }
-
     .stepper-val {
       font-family: 'Fraunces', serif;
       font-size: 56px;
       font-weight: 700;
-      color: var(--text);
       min-width: 80px;
       text-align: center;
       line-height: 1;
     }
 
-    /* Star rating */
-    .stars {
-      display: flex;
-      gap: 10px;
-      margin: 8px 0 32px;
-      justify-content: center;
-    }
-
+    /* Stars */
+    .stars { display: flex; gap: 10px; margin: 8px 0 32px; justify-content: center; }
     .star {
       font-size: 40px;
       cursor: pointer;
@@ -173,20 +171,12 @@
       filter: grayscale(1) opacity(0.3);
       user-select: none;
     }
-
     .star.lit { filter: none; transform: scale(1.1); }
     .star:hover { transform: scale(1.15); }
 
-    /* Choice cards */
-    .choices {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 8px 0 32px;
-    }
-
+    /* Choices */
+    .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0 32px; }
     .choices.cols-1 { grid-template-columns: 1fr; }
-
     .choice {
       border: 2px solid var(--border);
       border-radius: 14px;
@@ -196,21 +186,14 @@
       background: var(--bg);
       text-align: left;
     }
-
     .choice:hover { border-color: var(--accent); background: #fff5f2; }
     .choice.selected { border-color: var(--accent); background: #fff5f2; box-shadow: 0 0 0 3px rgba(232,99,58,0.12); }
-
     .choice-icon { font-size: 24px; margin-bottom: 8px; display: block; }
     .choice-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
     .choice-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
 
     /* Toggle */
-    .big-toggle {
-      display: flex;
-      gap: 12px;
-      margin: 8px 0 32px;
-    }
-
+    .big-toggle { display: flex; gap: 12px; margin: 8px 0 32px; }
     .toggle-opt {
       flex: 1;
       border: 2px solid var(--border);
@@ -221,131 +204,40 @@
       transition: all 0.15s;
       background: var(--bg);
     }
-
     .toggle-opt:hover { border-color: var(--accent); }
     .toggle-opt.selected { border-color: var(--accent); background: #fff5f2; box-shadow: 0 0 0 3px rgba(232,99,58,0.12); }
-
     .toggle-opt-icon { font-size: 28px; margin-bottom: 8px; display: block; }
     .toggle-opt-label { font-size: 15px; font-weight: 600; }
 
     /* Nav */
-    .nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 4px;
-    }
-
-    .btn {
-      padding: 12px 28px;
-      border-radius: 12px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--muted);
-      padding-left: 0;
-    }
+    .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+    .btn { padding: 12px 28px; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+    .btn-ghost { background: transparent; color: var(--muted); padding-left: 0; }
     .btn-ghost:hover { color: var(--text); }
+    .btn-next { background: var(--accent); color: white; box-shadow: 0 4px 14px rgba(232,99,58,0.35); display: flex; align-items: center; gap: 8px; }
+    .btn-next:hover { background: #d4562f; transform: translateY(-1px); }
+    .btn-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    .btn-next {
-      background: var(--accent);
-      color: white;
-      box-shadow: 0 4px 14px rgba(232,99,58,0.35);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .btn-next:hover { background: #d4562f; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(232,99,58,0.4); }
-    .btn-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-    /* Result screen */
-    .result-screen {
-      text-align: center;
-      animation: slideIn 0.4s cubic-bezier(0.4,0,0.2,1) both;
-    }
-
-    .result-house { font-size: 64px; margin-bottom: 20px; animation: bounce 0.6s 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
-
-    @keyframes bounce {
-      from { opacity: 0; transform: scale(0.5); }
-      to   { opacity: 1; transform: scale(1); }
-    }
-
-    .result-label {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-
-    .result-price {
-      font-family: 'Fraunces', serif;
-      font-size: 64px;
-      font-weight: 700;
-      color: var(--accent);
-      letter-spacing: -0.02em;
-      line-height: 1;
-      margin-bottom: 6px;
-    }
-
-    .result-usd {
-      font-size: 18px;
-      color: var(--muted);
-      margin-bottom: 32px;
-    }
-
-    .result-summary {
-      background: var(--bg);
-      border-radius: 14px;
-      padding: 20px;
-      text-align: left;
-      margin-bottom: 28px;
-    }
-
-    .summary-title {
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 14px;
-    }
-
-    .summary-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 0;
-      font-size: 14px;
-      border-bottom: 1px solid var(--border);
-    }
-
+    /* Result */
+    .result-screen { text-align: center; }
+    .result-house { font-size: 64px; margin-bottom: 20px; animation: bounce 0.6s 0.3s cubic-bezier(0.34,1.56,0.64,1) both; display: block; }
+    @keyframes bounce { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+    .result-label { font-size: 12px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .result-price { font-family: 'Fraunces', serif; font-size: 64px; font-weight: 700; color: var(--accent); letter-spacing: -0.02em; line-height: 1; margin-bottom: 6px; }
+    .result-usd { font-size: 18px; color: var(--muted); margin-bottom: 32px; }
+    .result-summary { background: var(--bg); border-radius: 14px; padding: 20px; text-align: left; margin-bottom: 28px; }
+    .summary-title { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+    .summary-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 14px; border-bottom: 1px solid var(--border); }
     .summary-row:last-child { border-bottom: none; }
     .summary-key { color: var(--muted); }
     .summary-val { font-weight: 600; }
-
-    .btn-restart {
-      background: var(--primary);
-      color: white;
-      width: 100%;
-      justify-content: center;
-      padding: 14px;
-      border-radius: 14px;
-      font-size: 16px;
-    }
-
+    .btn-restart { background: var(--primary); color: white; width: 100%; justify-content: center; padding: 14px; border-radius: 14px; font-size: 16px; border: none; font-family: 'DM Sans', sans-serif; font-weight: 600; cursor: pointer; transition: all 0.15s; }
     .btn-restart:hover { background: #2d2d4e; transform: translateY(-1px); }
 
     @media (max-width: 480px) {
       .card { padding: 32px 20px 24px; }
       .q-title { font-size: 22px; }
+      .welcome-title { font-size: 26px; }
       .result-price { font-size: 48px; }
       .choices { grid-template-columns: 1fr; }
     }
@@ -354,17 +246,35 @@
 <body>
 <div class="shell">
 
-  <div class="progress-wrap">
-    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:14%"></div></div>
+  <div class="progress-wrap hidden" id="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
     <span class="progress-text" id="progress-text">1 of 7</span>
   </div>
 
   <div class="card">
 
+    <!-- Welcome Screen -->
+    <div class="screen active" id="screen-0">
+      <div class="welcome">
+        <span class="welcome-icon">🏠</span>
+        <div class="q-label">Boston Housing Dataset</div>
+        <div class="welcome-title">What's Your Home <span>Worth?</span></div>
+        <div class="welcome-desc">
+          Answer 7 simple questions and our machine learning model will estimate your home's value — no confusing numbers, no jargon. Just plain English.
+        </div>
+        <div class="badges">
+          <span class="badge">⏱️ Takes 1 minute</span>
+          <span class="badge">🤖 ML Powered</span>
+          <span class="badge">📍 Boston Area</span>
+        </div>
+        <button class="btn-start" onclick="goNext(0)">Let's Get Started →</button>
+      </div>
+    </div>
+
     <!-- Q1: Rooms -->
-    <div class="screen active" id="screen-1">
+    <div class="screen" id="screen-1">
       <span class="q-emoji">🛋️</span>
-      <div class="q-label">Question 1</div>
+      <div class="q-label">Question 1 of 7</div>
       <div class="q-title">How many rooms does the house have?</div>
       <div class="q-sub">Count all rooms — bedrooms, living room, kitchen, etc.</div>
       <div class="stepper">
@@ -373,15 +283,15 @@
         <button class="stepper-btn" onclick="stepRooms(1)">+</button>
       </div>
       <div class="nav">
-        <span></span>
-        <button class="btn btn-next" onclick="goNext(1)">Next <span>→</span></button>
+        <button class="btn btn-ghost" onclick="goBack(1)">← Back</button>
+        <button class="btn btn-next" onclick="goNext(1)">Next →</button>
       </div>
     </div>
 
     <!-- Q2: Safety -->
     <div class="screen" id="screen-2">
       <span class="q-emoji">🔒</span>
-      <div class="q-label">Question 2</div>
+      <div class="q-label">Question 2 of 7</div>
       <div class="q-title">How safe is the neighborhood?</div>
       <div class="q-sub">Tap a star to rate — 1 is high crime, 5 is very safe.</div>
       <div class="stars" id="stars-safety">
@@ -400,21 +310,21 @@
     <!-- Q3: House age -->
     <div class="screen" id="screen-3">
       <span class="q-emoji">🏗️</span>
-      <div class="q-label">Question 3</div>
+      <div class="q-label">Question 3 of 7</div>
       <div class="q-title">How old is the house?</div>
       <div class="q-sub">Pick the era that best describes when it was built.</div>
       <div class="choices cols-1" id="choices-age">
-        <div class="choice" onclick="pickAge(this, 'new')" data-val="new">
+        <div class="choice" onclick="pickAge(this, 'new')">
           <span class="choice-icon">✨</span>
           <div class="choice-title">New Build</div>
           <div class="choice-desc">Built after 1980 — modern finishes, newer systems</div>
         </div>
-        <div class="choice" onclick="pickAge(this, 'mid')" data-val="mid">
+        <div class="choice" onclick="pickAge(this, 'mid')">
           <span class="choice-icon">🏠</span>
           <div class="choice-title">Mid-Century</div>
           <div class="choice-desc">Built 1940–1980 — solid construction, some updates</div>
         </div>
-        <div class="choice" onclick="pickAge(this, 'old')" data-val="old">
+        <div class="choice" onclick="pickAge(this, 'old')">
           <span class="choice-icon">🏛️</span>
           <div class="choice-title">Classic / Old</div>
           <div class="choice-desc">Built before 1940 — character home, may need work</div>
@@ -429,7 +339,7 @@
     <!-- Q4: River -->
     <div class="screen" id="screen-4">
       <span class="q-emoji">🌊</span>
-      <div class="q-label">Question 4</div>
+      <div class="q-label">Question 4 of 7</div>
       <div class="q-title">Is the property near the Charles River?</div>
       <div class="q-sub">River-adjacent properties often carry a premium.</div>
       <div class="big-toggle">
@@ -451,26 +361,26 @@
     <!-- Q5: Area type -->
     <div class="screen" id="screen-5">
       <span class="q-emoji">🏙️</span>
-      <div class="q-label">Question 5</div>
+      <div class="q-label">Question 5 of 7</div>
       <div class="q-title">What's the area like?</div>
       <div class="q-sub">Describe the general feel of the surrounding neighborhood.</div>
       <div class="choices" id="choices-area">
-        <div class="choice" onclick="pickArea(this, 'suburb')" data-val="suburb">
+        <div class="choice" onclick="pickArea(this, 'suburb')">
           <span class="choice-icon">🌳</span>
           <div class="choice-title">Quiet Suburb</div>
           <div class="choice-desc">Mostly residential, lots of green space</div>
         </div>
-        <div class="choice" onclick="pickArea(this, 'mixed')" data-val="mixed">
+        <div class="choice" onclick="pickArea(this, 'mixed')">
           <span class="choice-icon">🏘️</span>
           <div class="choice-title">Mixed Area</div>
           <div class="choice-desc">Blend of homes, shops, and offices</div>
         </div>
-        <div class="choice" onclick="pickArea(this, 'industrial')" data-val="industrial">
+        <div class="choice" onclick="pickArea(this, 'industrial')">
           <span class="choice-icon">🏭</span>
           <div class="choice-title">Industrial</div>
           <div class="choice-desc">Lots of factories or warehouses nearby</div>
         </div>
-        <div class="choice" onclick="pickArea(this, 'city')" data-val="city">
+        <div class="choice" onclick="pickArea(this, 'city')">
           <span class="choice-icon">🌆</span>
           <div class="choice-title">City Center</div>
           <div class="choice-desc">Dense, busy, close to everything</div>
@@ -485,7 +395,7 @@
     <!-- Q6: Schools -->
     <div class="screen" id="screen-6">
       <span class="q-emoji">🎓</span>
-      <div class="q-label">Question 6</div>
+      <div class="q-label">Question 6 of 7</div>
       <div class="q-title">How good are the local schools?</div>
       <div class="q-sub">1 star = poor, 5 stars = excellent schools nearby.</div>
       <div class="stars" id="stars-schools">
@@ -504,26 +414,26 @@
     <!-- Q7: Tax level -->
     <div class="screen" id="screen-7">
       <span class="q-emoji">💸</span>
-      <div class="q-label">Question 7</div>
+      <div class="q-label">Question 7 of 7</div>
       <div class="q-title">How would you describe the property tax level?</div>
       <div class="q-sub">Based on what you know about the area's cost of living.</div>
       <div class="choices cols-1" id="choices-tax">
-        <div class="choice" onclick="pickTax(this, 'low')" data-val="low">
+        <div class="choice" onclick="pickTax(this, 'low')">
           <span class="choice-icon">😊</span>
           <div class="choice-title">Low</div>
           <div class="choice-desc">Below average taxes for the region</div>
         </div>
-        <div class="choice" onclick="pickTax(this, 'medium')" data-val="medium">
+        <div class="choice" onclick="pickTax(this, 'medium')">
           <span class="choice-icon">😐</span>
           <div class="choice-title">Medium</div>
           <div class="choice-desc">About average — nothing unusual</div>
         </div>
-        <div class="choice" onclick="pickTax(this, 'high')" data-val="high">
+        <div class="choice" onclick="pickTax(this, 'high')">
           <span class="choice-icon">😬</span>
           <div class="choice-title">High</div>
           <div class="choice-desc">Above average taxes</div>
         </div>
-        <div class="choice" onclick="pickTax(this, 'very_high')" data-val="very_high">
+        <div class="choice" onclick="pickTax(this, 'very_high')">
           <span class="choice-icon">😱</span>
           <div class="choice-title">Very High</div>
           <div class="choice-desc">Noticeably expensive area</div>
@@ -539,15 +449,21 @@
     <div class="screen" id="screen-result">
       {% if prediction %}
       <div class="result-screen">
-        <div class="result-house">🏡</div>
+        <span class="result-house">🏡</span>
         <div class="result-label">Estimated Home Value</div>
         <div class="result-price">${{ prediction }}k</div>
         <div class="result-usd">≈ ${{ "{:,.0f}".format(prediction * 1000) }} USD</div>
-        <div class="result-summary" id="result-summary">
-          <div class="summary-title">Your answers</div>
-          <!-- filled by JS from sessionStorage -->
+        <div class="result-summary">
+          <div class="summary-title">Your Answers</div>
+          <div class="summary-row"><span class="summary-key">📍 Area Type</span><span class="summary-val" id="s-area">—</span></div>
+          <div class="summary-row"><span class="summary-key">🛋️ Rooms</span><span class="summary-val" id="s-rooms">—</span></div>
+          <div class="summary-row"><span class="summary-key">🔒 Safety</span><span class="summary-val" id="s-safety">—</span></div>
+          <div class="summary-row"><span class="summary-key">🏗️ Age</span><span class="summary-val" id="s-age">—</span></div>
+          <div class="summary-row"><span class="summary-key">🌊 Charles River</span><span class="summary-val" id="s-river">—</span></div>
+          <div class="summary-row"><span class="summary-key">🎓 Schools</span><span class="summary-val" id="s-schools">—</span></div>
+          <div class="summary-row"><span class="summary-key">💸 Tax Level</span><span class="summary-val" id="s-tax">—</span></div>
         </div>
-        <button class="btn btn-restart" onclick="location.href='/'">↩ Start Over</button>
+        <button class="btn-restart" onclick="location.href='/'">↩ Start Over</button>
       </div>
       {% endif %}
     </div>
@@ -555,7 +471,7 @@
   </div><!-- /card -->
 </div><!-- /shell -->
 
-<!-- Hidden form that actually submits -->
+<!-- Hidden form -->
 <form method="POST" action="/predict" id="hidden-form" style="display:none">
   <input type="hidden" name="avg_rooms" id="f-avg_rooms">
   <input type="hidden" name="crime_rate" id="f-crime_rate">
@@ -566,7 +482,6 @@
   <input type="hidden" name="residential_zone_pct" id="f-residential_zone_pct">
   <input type="hidden" name="pupil_teacher_ratio" id="f-pupil_teacher_ratio">
   <input type="hidden" name="tax_rate" id="f-tax_rate">
-  <!-- Dataset averages for hidden features -->
   <input type="hidden" name="employment_dist" value="3.7950">
   <input type="hidden" name="highway_access" value="9.5494">
   <input type="hidden" name="black_proportion" value="356.67">
@@ -574,52 +489,49 @@
 </form>
 
 <script>
-  // State
-  let rooms = 6;
-  let safetyRating = 0;
-  let ageChoice = null;
-  let riverChoice = null;
-  let areaChoice = null;
-  let schoolsRating = 0;
-  let taxChoice = null;
+  let rooms = 6, safetyRating = 0, ageChoice = null;
+  let riverChoice = null, areaChoice = null, schoolsRating = 0, taxChoice = null;
 
-  // Progress
   function updateProgress(step) {
     const pct = Math.round((step / 7) * 100);
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-text').textContent = step + ' of 7';
   }
 
-  // Navigation
   function goNext(from) {
     document.getElementById('screen-' + from).classList.remove('active');
     const next = from + 1;
     document.getElementById('screen-' + next).classList.add('active');
-    updateProgress(next);
+    if (from === 0) {
+      document.getElementById('progress-wrap').classList.remove('hidden');
+      updateProgress(1);
+    } else {
+      updateProgress(next);
+    }
   }
 
   function goBack(from) {
     document.getElementById('screen-' + from).classList.remove('active');
     const prev = from - 1;
     document.getElementById('screen-' + prev).classList.add('active');
-    updateProgress(prev);
+    if (prev === 0) {
+      document.getElementById('progress-wrap').classList.add('hidden');
+    } else {
+      updateProgress(prev);
+    }
   }
 
-  // Q1: Rooms stepper
   function stepRooms(dir) {
     rooms = Math.max(3, Math.min(12, rooms + dir));
     document.getElementById('rooms-display').textContent = rooms;
   }
 
-  // Q2: Safety stars
   function rateSafety(n) {
     safetyRating = n;
-    const stars = document.querySelectorAll('#stars-safety .star');
-    stars.forEach((s, i) => s.classList.toggle('lit', i < n));
+    document.querySelectorAll('#stars-safety .star').forEach((s, i) => s.classList.toggle('lit', i < n));
     document.getElementById('next-2').disabled = false;
   }
 
-  // Q3: Age choices
   function pickAge(el, val) {
     document.querySelectorAll('#choices-age .choice').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
@@ -627,7 +539,6 @@
     document.getElementById('next-3').disabled = false;
   }
 
-  // Q4: River toggle
   function pickRiver(val) {
     riverChoice = val;
     document.getElementById('river-yes').classList.toggle('selected', val === 'yes');
@@ -635,7 +546,6 @@
     document.getElementById('next-4').disabled = false;
   }
 
-  // Q5: Area choices
   function pickArea(el, val) {
     document.querySelectorAll('#choices-area .choice').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
@@ -643,15 +553,12 @@
     document.getElementById('next-5').disabled = false;
   }
 
-  // Q6: Schools stars
   function rateSchools(n) {
     schoolsRating = n;
-    const stars = document.querySelectorAll('#stars-schools .star');
-    stars.forEach((s, i) => s.classList.toggle('lit', i < n));
+    document.querySelectorAll('#stars-schools .star').forEach((s, i) => s.classList.toggle('lit', i < n));
     document.getElementById('next-6').disabled = false;
   }
 
-  // Q7: Tax choices
   function pickTax(el, val) {
     document.querySelectorAll('#choices-tax .choice').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
@@ -659,23 +566,17 @@
     document.getElementById('next-7').disabled = false;
   }
 
-  // Submit: map answers → ML values
   function submitForm() {
-    // avg_rooms: direct
     document.getElementById('f-avg_rooms').value = rooms;
 
-    // crime_rate: safety 5→very safe (low crime), 1→high crime
     const crimeMap = { 5: 0.01, 4: 0.1, 3: 1.0, 2: 5.0, 1: 15.0 };
     document.getElementById('f-crime_rate').value = crimeMap[safetyRating];
 
-    // pre1940_pct: house age
     const ageMap = { new: 10, mid: 55, old: 90 };
     document.getElementById('f-pre1940_pct').value = ageMap[ageChoice];
 
-    // charles river
     document.getElementById('f-charles_river').value = riverChoice === 'yes' ? 1 : 0;
 
-    // area → industrial_pct, nitric_oxide, residential_zone_pct
     const areaMap = {
       suburb:     { ind: 3.0,  nox: 0.42, res: 30.0 },
       mixed:      { ind: 10.0, nox: 0.52, res: 15.0 },
@@ -687,19 +588,17 @@
     document.getElementById('f-nitric_oxide').value = area.nox;
     document.getElementById('f-residential_zone_pct').value = area.res;
 
-    // schools → pupil_teacher_ratio (5 stars = low ratio = good schools)
     const ptMap = { 5: 13.0, 4: 15.5, 3: 17.5, 2: 19.5, 1: 21.5 };
     document.getElementById('f-pupil_teacher_ratio').value = ptMap[schoolsRating];
 
-    // tax level
     const taxMap = { low: 200, medium: 330, high: 500, very_high: 700 };
     document.getElementById('f-tax_rate').value = taxMap[taxChoice];
 
     document.getElementById('hidden-form').submit();
   }
 
-  // Show result screen if prediction exists
   {% if prediction %}
+  document.getElementById('progress-wrap').classList.remove('hidden');
   document.getElementById('progress-fill').style.width = '100%';
   document.getElementById('progress-text').textContent = 'Done!';
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
