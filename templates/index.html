@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Boston Housing Price Predictor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0c10;
+      --card: #13151a;
+      --border: #1e2128;
+      --accent: #c8f135;
+      --accent2: #3bffc8;
+      --text: #eef0f4;
+      --muted: #6b7280;
+      --input-bg: #1a1d24;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      padding: 40px 20px 80px;
+      background-image:
+        radial-gradient(ellipse 60% 40% at 80% 10%, rgba(200,241,53,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 10% 80%, rgba(59,255,200,0.05) 0%, transparent 60%);
+    }
+
+    header {
+      max-width: 860px;
+      margin: 0 auto 48px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 8px;
+      letter-spacing: 0.05em;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      animation: fadeUp 0.7s ease 0.1s both;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      margin-bottom: 24px;
+    }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input, select {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      padding: 10px 14px;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(200,241,53,0.1);
+    }
+
+    select option { background: var(--card); }
+
+    .hint {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .submit-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    button[type="submit"] {
+      background: var(--accent);
+      color: #0b0c10;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 14px 40px;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    button[type="submit"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(200,241,53,0.25);
+    }
+
+    button[type="submit"]:active { transform: translateY(0); }
+
+    /* Result banner */
+    .result-banner {
+      background: linear-gradient(135deg, rgba(200,241,53,0.1), rgba(59,255,200,0.08));
+      border: 1px solid rgba(200,241,53,0.3);
+      border-radius: 16px;
+      padding: 32px 36px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    .result-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 6px;
+    }
+
+    .result-price {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(36px, 6vw, 56px);
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+    }
+
+    .result-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .result-badge {
+      background: rgba(200,241,53,0.12);
+      border: 1px solid rgba(200,241,53,0.2);
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 12px;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.94); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <div class="logo">Boston Housing</div>
+      <h1>Price <span>Predictor</span></h1>
+      <p class="subtitle">Linear Regression · Log-transformed target · 1970s Boston suburbs</p>
+    </div>
+  </header>
+
+  <div class="container">
+
+    {% if prediction %}
+    <div class="result-banner">
+      <div>
+        <div class="result-label">Predicted Median Home Value</div>
+        <div class="result-price">${{ prediction }}k</div>
+        <div class="result-note">× $1,000 = ${{ "{:,.0f}".format(prediction * 1000) }}</div>
+      </div>
+      <div class="result-badge">
+        Model: Linear Regression<br>
+        Target: log(price) → exp()
+      </div>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/predict">
+
+      <div class="card">
+        <div class="section-label">Crime &amp; Zoning</div>
+        <div class="grid">
+          <div class="field">
+            <label>Crime Rate</label>
+            <input type="number" name="crime_rate" step="0.00001" placeholder="0.00632" required>
+            <span class="hint">Per capita crime rate</span>
+          </div>
+          <div class="field">
+            <label>Residential Zone %</label>
+            <input type="number" name="residential_zone_pct" step="0.1" placeholder="18.0" required>
+            <span class="hint">Large lot zoning %</span>
+          </div>
+          <div class="field">
+            <label>Industrial %</label>
+            <input type="number" name="industrial_pct" step="0.01" placeholder="2.31" required>
+            <span class="hint">Non-retail business acres</span>
+          </div>
+          <div class="field">
+            <label>Charles River</label>
+            <select name="charles_river" required>
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+            <span class="hint">Borders the river?</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Environment &amp; Property</div>
+        <div class="grid">
+          <div class="field">
+            <label>Nitric Oxide</label>
+            <input type="number" name="nitric_oxide" step="0.001" placeholder="0.538" required>
+            <span class="hint">Parts per 10 million</span>
+          </div>
+          <div class="field">
+            <label>Avg Rooms</label>
+            <input type="number" name="avg_rooms" step="0.001" placeholder="6.575" required>
+            <span class="hint">Rooms per dwelling</span>
+          </div>
+          <div class="field">
+            <label>Pre-1940 Units %</label>
+            <input type="number" name="pre1940_pct" step="0.1" placeholder="65.2" required>
+            <span class="hint">Owner-occupied before 1940</span>
+          </div>
+          <div class="field">
+            <label>Employment Distance</label>
+            <input type="number" name="employment_dist" step="0.0001" placeholder="4.09" required>
+            <span class="hint">Weighted dist. to job centers</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Socioeconomic &amp; Tax</div>
+        <div class="grid">
+          <div class="field">
+            <label>Highway Access</label>
+            <input type="number" name="highway_access" step="1" placeholder="1" required>
+            <span class="hint">Radial highway index</span>
+          </div>
+          <div class="field">
+            <label>Tax Rate</label>
+            <input type="number" name="tax_rate" step="1" placeholder="296" required>
+            <span class="hint">Per $10,000 property value</span>
+          </div>
+          <div class="field">
+            <label>Pupil-Teacher Ratio</label>
+            <input type="number" name="pupil_teacher_ratio" step="0.1" placeholder="15.3" required>
+            <span class="hint">By town</span>
+          </div>
+          <div class="field">
+            <label>Black Proportion</label>
+            <input type="number" name="black_proportion" step="0.01" placeholder="396.9" required>
+            <span class="hint">1000(Bk−0.63)²</span>
+          </div>
+          <div class="field">
+            <label>Lower Status %</label>
+            <input type="number" name="lower_status_pct" step="0.01" placeholder="4.98" required>
+            <span class="hint">% lower-status population</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button type="submit">Predict Price →</button>
+      </div>
+
+    </form>
+  </div>
+
+</body>
+</html>
